@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { User, Plus, X, Trash2 } from 'lucide-react';
 import type { User as UserType } from '../types';
+import buyMeLogo from '/buyme-logo.png';
 import './UserSelector.css';
 
 interface UserSelectorProps {
@@ -89,7 +90,7 @@ const UserSelector = ({ users, onSelectUser, onAddUser, onDeleteUser }: UserSele
     <div className="user-selector">
       <div className="user-selector-content glass">
         <div className="buyme-logo">
-          <img src="/buyme-logo.png" alt="BuyMe" className="buyme-image" />
+          <img src={buyMeLogo} alt="BuyMe" className="buyme-image" />
         </div>
         
         <h1 className="app-title">ארנק שוברים</h1>
