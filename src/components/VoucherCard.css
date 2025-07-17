@@ -1,0 +1,120 @@
+.voucher-card {
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.voucher-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(135deg, var(--primary-purple), var(--secondary-purple));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.voucher-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(139, 92, 246, 0.4);
+}
+
+.voucher-card:hover::before {
+  opacity: 1;
+}
+
+.voucher-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.voucher-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.external-link-icon {
+  color: var(--secondary-purple);
+  flex-shrink: 0;
+}
+
+.voucher-amount {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent-purple);
+  background: rgba(139, 92, 246, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.voucher-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.action-btn {
+  padding: 8px 12px;
+  min-width: auto;
+  height: 44px;
+  border-radius: 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.action-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 480px) {
+  .voucher-card {
+    padding: 16px;
+  }
+  
+  .voucher-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+  
+  .voucher-name {
+    justify-content: center;
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+  
+  .voucher-amount {
+    font-size: 18px;
+    text-align: center;
+    align-self: center;
+  }
+  
+  .voucher-actions {
+    justify-content: center;
+    margin-top: 12px;
+  }
+  
+  .action-btn {
+    padding: 10px;
+    min-width: 48px;
+    height: 48px;
+  }
+}

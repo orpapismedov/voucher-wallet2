@@ -1,0 +1,22 @@
+/* Import base modal styles */
+@import './AddVoucherModal.css';
+
+.voucher-info {
+  padding: 0 24px 20px;
+  text-align: center;
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 20px;
+}
+
+.voucher-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.voucher-info p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
