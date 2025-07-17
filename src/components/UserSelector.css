@@ -60,15 +60,8 @@
   gap: 16px;
 }
 
-.user-button-container {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-}
-
 .user-button {
-  flex: 1;
+  width: 100%;
   padding: 18px 24px;
   font-size: 18px;
   font-weight: 600;
@@ -78,30 +71,6 @@
   border: 2px solid rgba(139, 92, 246, 0.4);
   position: relative;
   overflow: hidden;
-}
-
-.delete-user-btn {
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 12px;
-  padding: 12px;
-  color: var(--danger-color);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  height: 44px;
-}
-
-.delete-user-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.5);
-  color: #ff5252;
-  transform: scale(1.05);
 }
 
 .user-button::before {
@@ -125,162 +94,6 @@
   border-color: rgba(139, 92, 246, 0.8);
 }
 
-.add-user-button {
-  width: 100%;
-  padding: 18px 24px;
-  font-size: 18px;
-  font-weight: 600;
-  border-radius: 20px;
-  transition: all 0.3s ease;
-  background: rgba(139, 92, 246, 0.1);
-  border: 2px dashed rgba(139, 92, 246, 0.4);
-  color: var(--primary-purple);
-  margin-top: 8px;
-}
-
-.add-user-button:hover {
-  background: rgba(139, 92, 246, 0.2);
-  border-color: rgba(139, 92, 246, 0.6);
-  color: var(--light-purple);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
-}
-
-/* Modal styles for UserSelector */
-.user-selector .modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
-}
-
-.user-selector .modal-content {
-  width: 90%;
-  max-width: 400px;
-  margin: 20px;
-  padding: 30px;
-  border-radius: 20px;
-  animation: modalSlideIn 0.3s ease-out;
-}
-
-.user-selector .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
-}
-
-.user-selector .modal-header h2 {
-  margin: 0;
-  font-size: 20px;
-  color: var(--text-primary);
-}
-
-.user-selector .close-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  padding: 4px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-}
-
-.user-selector .close-btn:hover {
-  background: rgba(139, 92, 246, 0.2);
-  color: var(--primary-purple);
-}
-
-.user-selector .modal-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.user-selector .form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.user-selector .form-group label {
-  font-weight: 500;
-  color: var(--text-primary);
-  font-size: 14px;
-}
-
-.user-selector .input {
-  padding: 12px 16px;
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  border-radius: 12px;
-  background: rgba(0, 0, 0, 0.3);
-  color: var(--text-primary);
-  font-size: 16px;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-
-.user-selector .input:focus {
-  outline: none;
-  border-color: var(--primary-purple);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-}
-
-.user-selector .input::placeholder {
-  color: var(--text-muted);
-}
-
-.user-selector .modal-actions {
-  display: flex;
-  gap: 12px;
-  justify-content: flex-end;
-}
-
-.user-selector .modal-actions .btn {
-  padding: 10px 20px;
-  min-width: 100px;
-}
-
-.user-selector .confirmation-content {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.user-selector .confirmation-content p {
-  margin: 8px 0;
-  color: var(--text-primary);
-  line-height: 1.5;
-}
-
-.user-selector .warning-text {
-  color: var(--danger-color) !important;
-  font-weight: 500;
-  font-size: 14px;
-  margin-top: 16px !important;
-}
-
-@keyframes modalSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-20px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
@@ -301,39 +114,14 @@
     font-size: 24px;
   }
   
-  .user-button, .add-user-button {
+  .user-button {
     padding: 14px 20px;
     font-size: 16px;
-  }
-
-  .user-button-container {
-    gap: 8px;
-  }
-
-  .delete-user-btn {
-    min-width: 40px;
-    height: 40px;
-    padding: 10px;
   }
   
   .buyme-image {
     width: 120px;
     max-height: 80px;
     padding: 6px;
-  }
-
-  .user-selector .modal-content {
-    margin: 10px;
-    padding: 20px;
-    max-width: none;
-    width: calc(100% - 20px);
-  }
-
-  .user-selector .modal-actions {
-    flex-direction: column;
-  }
-
-  .user-selector .modal-actions .btn {
-    min-width: 100%;
   }
 }

@@ -54,11 +54,6 @@ const EditVoucherModal = ({
       return;
     }
 
-    if (!link.trim()) {
-      alert('אנא הזן קישור לשובר');
-      return;
-    }
-
     onSave(voucher.id, voucherName, parseFloat(amount), link.trim());
     handleClose();
   };
@@ -126,14 +121,13 @@ const EditVoucherModal = ({
           </div>
 
           <div className="form-group">
-            <label>קישור לשובר:</label>
+            <label>קישור לשובר (אופציונלי):</label>
             <input
               type="url"
               className="input"
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="הזן קישור..."
-              required
             />
           </div>
 

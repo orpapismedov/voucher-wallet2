@@ -31,11 +31,6 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
       return;
     }
 
-    if (!link.trim()) {
-      alert('אנא הזן קישור לשובר');
-      return;
-    }
-
     onAdd(voucherName, parseFloat(amount), link.trim());
     handleClose();
   };
@@ -103,14 +98,13 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
           </div>
 
           <div className="form-group">
-            <label>קישור לשובר:</label>
+            <label>קישור לשובר (אופציונלי):</label>
             <input
               type="url"
               className="input"
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="הזן קישור..."
-              required
             />
           </div>
 

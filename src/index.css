@@ -22,11 +22,6 @@
   --text-secondary: rgba(255, 255, 255, 0.9);
   --text-muted: rgba(255, 255, 255, 0.7);
   
-  /* Status colors */
-  --warning-color: #ffa726;
-  --danger-color: #ff6b6b;
-  --success-color: #4caf50;
-  
   /* Backgrounds */
   --bg-gradient: linear-gradient(135deg, #0A0A0F 0%, #1A1A2E 50%, #16213E 100%);
   --bg-secondary: rgba(139, 92, 246, 0.1);
@@ -55,35 +50,31 @@ body {
   position: relative;
 }
 
-/* Money background layer - Testing with high visibility */
 body::before {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: url('/money-bg.jpg') repeat;
-  background-size: 200px 200px;
-  opacity: 0.8;
-  z-index: -10;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 20% 20%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+              radial-gradient(circle at 40% 60%, rgba(139, 92, 246, 0.05) 0%, transparent 50%);
+  opacity: 0.3;
+  z-index: -2;
   animation: float 30s ease-in-out infinite;
-  pointer-events: none;
-  will-change: transform;
 }
 
-/* Gradient overlay */
 body::after {
   content: '';
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   background: var(--bg-gradient);
-  opacity: 0.75;
-  z-index: -5;
-  pointer-events: none;
+  opacity: 0.85;
+  z-index: -1;
 }
 
 #root {
@@ -174,19 +165,9 @@ body::after {
 }
 
 .btn-danger {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--danger-color);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-}
-
-.btn-danger:hover {
   background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.5);
-  color: #ff5252;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+  color: #FCA5A5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .btn-danger:hover {

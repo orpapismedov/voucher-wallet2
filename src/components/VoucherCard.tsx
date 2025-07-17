@@ -51,10 +51,9 @@ const VoucherCard = ({
             <button
               className="action-btn btn btn-secondary"
               onClick={() => onEdit(voucher)}
-              title="ערוך"
+              title="עריכה"
             >
               <Edit size={16} />
-              ערוך
             </button>
             {onArchive && (
               <button
@@ -63,7 +62,6 @@ const VoucherCard = ({
                 title="העבר לארכיון"
               >
                 <Archive size={16} />
-                העבר לארכיון
               </button>
             )}
           </>

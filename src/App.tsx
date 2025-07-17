@@ -1,28 +1,16 @@
 import { useState, useEffect } from 'react';
-import { Plus, ArrowRight, PieChart, Wallet, Archive, Trash2 } from 'lucide-react';
+import { Plus, ArrowRight, PieChart, Wallet, Archive } from 'lucide-react';
 import type { User, Voucher } from './types';
 import { USERS } from './constants';
-import { createVoucher, calculateSummary, formatCurrency } from './utils/voucherUtils';
-import { 
-  subscribeToUsers, 
-  subscribeToVouchers, 
-  saveUser, 
-  deleteUser as deleteUserFromDB,
-  deleteUserVouchers,
-  saveVoucher, 
-  updateVoucher as updateVoucherInDB, 
-  deleteVoucher as deleteVoucherFromDB 
-} from './services/firestoreService';
+import { createVoucher, updateVoucher, calculateSummary, formatCurrency } from './utils/voucherUtils';
 import UserSelector from './components/UserSelector';
 import VoucherCard from './components/VoucherCard';
 import AddVoucherModal from './components/AddVoucherModal';
 import EditVoucherModal from './components/EditVoucherModal';
 import RestoreVoucherModal from './components/RestoreVoucherModal';
-import ConfirmationModal from './components/ConfirmationModal';
 import './App.css';
 
 function App() {
-  const [users, setUsers] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [vouchers, setVouchers] = useState<Voucher[]>([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -31,215 +19,76 @@ function App() {
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null);
   const [restoringVoucher, setRestoringVoucher] = useState<Voucher | null>(null);
   const [activeTab, setActiveTab] = useState<'wallet' | 'archive'>('wallet');
-  const [isLoading, setIsLoading] = useState(true);
-  const [confirmationModal, setConfirmationModal] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
-    isDangerous?: boolean;
-  }>({
-    isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: () => {},
-    isDangerous: false
-  });
 
-  // Subscribe to users and vouchers from Firestore
+  // Load vouchers from localStorage on mount
   useEffect(() => {
-    setIsLoading(true);
-
-    // Subscribe to users
-    const unsubscribeUsers = subscribeToUsers((firestoreUsers) => {
-      if (firestoreUsers.length === 0) {
-        // If no users in Firestore, initialize with default users
-        const initializeDefaultUsers = async () => {
-          try {
-            for (const user of USERS) {
-              await saveUser(user);
-            }
-          } catch (error) {
-            console.error('Error initializing default users:', error);
-            setUsers(USERS); // Fallback to default users
-            setIsLoading(false);
-          }
-        };
-        initializeDefaultUsers();
-      } else {
-        setUsers(firestoreUsers);
-        setIsLoading(false);
+    const savedVouchers = localStorage.getItem('vouchers');
+    if (savedVouchers) {
+      try {
+        const parsed = JSON.parse(savedVouchers);
+        const vouchersWithDates = parsed.map((v: any) => ({
+          ...v,
+          createdAt: new Date(v.createdAt),
+          updatedAt: new Date(v.updatedAt)
+        }));
+        setVouchers(vouchersWithDates);
+      } catch (error) {
+        console.error('Error loading vouchers:', error);
       }
-    });
-
-    // Subscribe to vouchers
-    const unsubscribeVouchers = subscribeToVouchers((firestoreVouchers) => {
-      setVouchers(firestoreVouchers);
-    });
-
-    // Cleanup subscriptions on unmount
-    return () => {
-      unsubscribeUsers();
-      unsubscribeVouchers();
-    };
+    }
   }, []);
+
+  // Save vouchers to localStorage whenever vouchers change
+  useEffect(() => {
+    localStorage.setItem('vouchers', JSON.stringify(vouchers));
+  }, [vouchers]);
 
   const currentUserVouchers = vouchers.filter(v => v.userId === selectedUser?.id);
   const activeVouchers = currentUserVouchers.filter(v => !v.isArchived);
   const archivedVouchers = currentUserVouchers.filter(v => v.isArchived);
   const summary = calculateSummary(currentUserVouchers);
 
-  const handleAddVoucher = async (name: string, amount: number, link: string) => {
+  const handleAddVoucher = (name: string, amount: number, link: string) => {
     if (!selectedUser) return;
     
-    try {
-      const newVoucher = createVoucher(name, amount, link, selectedUser.id);
-      await saveVoucher(newVoucher);
-    } catch (error) {
-      console.error('Error adding voucher:', error);
-      alert('שגיאה בשמירת השובר');
-    }
+    const newVoucher = createVoucher(name, amount, link, selectedUser.id);
+    setVouchers(prev => [...prev, newVoucher]);
   };
 
-  const handleEditVoucher = async (id: string, name: string, amount: number, link: string) => {
-    try {
-      const existingVoucher = vouchers.find(v => v.id === id);
-      if (!existingVoucher) return;
-
-      const updatedData = {
-        name,
-        amount,
-        link,
-        updatedAt: new Date(),
+  const handleEditVoucher = (id: string, name: string, amount: number, link: string) => {
+    setVouchers(prev => prev.map(v => {
+      if (v.id === id) {
+        const updated = updateVoucher(v, { name, amount, link });
         // Auto-archive if amount becomes 0
-        isArchived: amount === 0 ? true : existingVoucher.isArchived
-      };
-
-      await updateVoucherInDB(id, updatedData);
-    } catch (error) {
-      console.error('Error updating voucher:', error);
-      alert('שגיאה בעדכון השובר');
-    }
-  };
-
-  const handleDeleteAllArchived = () => {
-    if (!selectedUser) return;
-    
-    const archivedCount = vouchers.filter(v => v.userId === selectedUser.id && v.isArchived).length;
-    if (archivedCount === 0) {
-      setConfirmationModal({
-        isOpen: true,
-        title: 'אין שוברים בארכיון',
-        message: 'אין שוברים בארכיון למחיקה',
-        onConfirm: () => setConfirmationModal(prev => ({ ...prev, isOpen: false })),
-        isDangerous: false
-      });
-      return;
-    }
-    
-    setConfirmationModal({
-      isOpen: true,
-      title: 'מחיקת כל הארכיון',
-      message: `האם אתה בטוח שברצונך למחוק את כל ${archivedCount} השוברים בארכיון? פעולה זו לא ניתנת לביטול.`,
-      onConfirm: async () => {
-        try {
-          const archivedVouchers = vouchers.filter(v => v.userId === selectedUser.id && v.isArchived);
-          const deletePromises = archivedVouchers.map(v => deleteVoucherFromDB(v.id));
-          await Promise.all(deletePromises);
-          setConfirmationModal(prev => ({ ...prev, isOpen: false }));
-        } catch (error) {
-          console.error('Error deleting archived vouchers:', error);
-          alert('שגיאה במחיקת השוברים');
+        if (amount === 0) {
+          return updateVoucher(updated, { isArchived: true });
         }
-      },
-      isDangerous: true
-    });
+        return updated;
+      }
+      return v;
+    }));
   };
 
   const handleArchiveVoucher = (voucher: Voucher) => {
-    setConfirmationModal({
-      isOpen: true,
-      title: 'העברה לארכיון',
-      message: `האם אתה בטוח שברצונך להעביר את השובר "${voucher.name}" לארכיון?`,
-      onConfirm: async () => {
-        try {
-          await updateVoucherInDB(voucher.id, { 
-            isArchived: true, 
-            updatedAt: new Date() 
-          });
-          setConfirmationModal(prev => ({ ...prev, isOpen: false }));
-        } catch (error) {
-          console.error('Error archiving voucher:', error);
-          alert('שגיאה בהעברת השובר לארכיון');
-        }
-      },
-      isDangerous: false
-    });
+    setVouchers(prev => prev.map(v => 
+      v.id === voucher.id ? updateVoucher(v, { isArchived: true }) : v
+    ));
   };
 
-  const handleRestoreVoucher = async (id: string, newAmount: number) => {
-    try {
-      await updateVoucherInDB(id, { 
-        amount: newAmount, 
-        isArchived: false, 
-        updatedAt: new Date() 
-      });
-    } catch (error) {
-      console.error('Error restoring voucher:', error);
-      alert('שגיאה בשחזור השובר');
-    }
+  const handleRestoreVoucher = (id: string, newAmount: number) => {
+    setVouchers(prev => prev.map(v => 
+      v.id === id ? updateVoucher(v, { amount: newAmount, isArchived: false }) : v
+    ));
   };
 
   const handleDeleteVoucher = (voucher: Voucher) => {
-    setConfirmationModal({
-      isOpen: true,
-      title: 'מחיקת שובר',
-      message: `האם אתה בטוח שברצונך למחוק את השובר "${voucher.name}" לצמיתות?`,
-      onConfirm: async () => {
-        try {
-          await deleteVoucherFromDB(voucher.id);
-          setConfirmationModal(prev => ({ ...prev, isOpen: false }));
-        } catch (error) {
-          console.error('Error deleting voucher:', error);
-          alert('שגיאה במחיקת השובר');
-        }
-      },
-      isDangerous: true
-    });
+    if (confirm(`האם אתה בטוח שברצונך למחוק את השובר "${voucher.name}" לצמיתות?`)) {
+      setVouchers(prev => prev.filter(v => v.id !== voucher.id));
+    }
   };
 
   const handleOpenLink = (link: string) => {
     window.open(link, '_blank');
-  };
-
-  const handleAddUser = async (name: string) => {
-    try {
-      // Generate a unique ID for the new user
-      const id = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
-      const newUser: User = { id, name };
-      await saveUser(newUser);
-    } catch (error) {
-      console.error('Error adding user:', error);
-      alert('שגיאה בהוספת המשתמש');
-    }
-  };
-
-  const handleDeleteUser = async (userId: string) => {
-    try {
-      // Delete all vouchers belonging to this user
-      await deleteUserVouchers(userId);
-      
-      // Delete the user
-      await deleteUserFromDB(userId);
-      
-      // If the deleted user was currently selected, go back to user selection
-      if (selectedUser?.id === userId) {
-        setSelectedUser(null);
-      }
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      alert('שגיאה במחיקת המשתמש');
-    }
   };
 
   const handleVoucherEdit = (voucher: Voucher) => {
@@ -257,21 +106,8 @@ function App() {
     setActiveTab('wallet');
   };
 
-  // Show loading state while initializing
-  if (isLoading) {
-    return (
-      <div className="app loading-container">
-        <div className="loading-content glass">
-          <div className="loading-spinner"></div>
-          <h2>טוען נתונים...</h2>
-          <p>מתחבר למסד הנתונים</p>
-        </div>
-      </div>
-    );
-  }
-
   if (!selectedUser) {
-    return <UserSelector users={users} onSelectUser={setSelectedUser} onAddUser={handleAddUser} onDeleteUser={handleDeleteUser} />;
+    return <UserSelector users={USERS} onSelectUser={setSelectedUser} />;
   }
 
   return (
@@ -366,18 +202,7 @@ function App() {
             </div>
           ) : (
             <div className="vouchers-section">
-              <div className="archive-header">
-                <h2 className="section-title">ארכיון שוברים</h2>
-                {archivedVouchers.length > 0 && (
-                  <button 
-                    className="delete-all-btn btn btn-danger"
-                    onClick={handleDeleteAllArchived}
-                  >
-                    <Trash2 size={16} />
-                    מחק את כל הארכיון
-                  </button>
-                )}
-              </div>
+              <h2 className="section-title">ארכיון שוברים</h2>
               {archivedVouchers.length === 0 ? (
                 <div className="empty-state glass">
                   <Archive size={48} />
@@ -429,15 +254,6 @@ function App() {
           setRestoringVoucher(null);
         }}
         onRestore={handleRestoreVoucher}
-      />
-
-      <ConfirmationModal
-        isOpen={confirmationModal.isOpen}
-        title={confirmationModal.title}
-        message={confirmationModal.message}
-        onConfirm={confirmationModal.onConfirm}
-        onCancel={() => setConfirmationModal(prev => ({ ...prev, isOpen: false }))}
-        isDangerous={confirmationModal.isDangerous}
       />
     </div>
   );
