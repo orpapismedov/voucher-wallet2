@@ -12,6 +12,9 @@
   padding: 20px;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
+  /* Ensure proper centering on mobile */
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
 }
 
 .modal-content {

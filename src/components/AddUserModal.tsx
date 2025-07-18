@@ -48,7 +48,6 @@ const AddUserModal = ({ isOpen, onClose, onAdd }: AddUserModalProps) => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="הכנס שם משתמש..."
-              autoFocus
               required
             />
           </div>

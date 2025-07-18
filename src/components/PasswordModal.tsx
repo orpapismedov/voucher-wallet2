@@ -63,7 +63,6 @@ const PasswordModal = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="הכנס סיסמת מנהל"
-                autoFocus
                 required
               />
               <button
