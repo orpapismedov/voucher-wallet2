@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Save, Upload, QrCode } from 'lucide-react';
+import { X, Save, Upload } from 'lucide-react';
 import type { Voucher, VoucherType } from '../types';
 import { VOUCHER_TYPES } from '../constants';
 import AlertModal from './AlertModal';
