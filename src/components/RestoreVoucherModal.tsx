@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, RotateCcw } from 'lucide-react';
 import type { Voucher } from '../types';
+import AlertModal from './AlertModal';
 import './RestoreVoucherModal.css';
 
 interface RestoreVoucherModalProps {
@@ -17,6 +18,11 @@ const RestoreVoucherModal = ({
   onRestore 
 }: RestoreVoucherModalProps) => {
   const [amount, setAmount] = useState('');
+  const [alertModal, setAlertModal] = useState<{isOpen: boolean; message: string; variant?: 'info' | 'warning' | 'error'}>({
+    isOpen: false,
+    message: '',
+    variant: 'warning'
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +30,11 @@ const RestoreVoucherModal = ({
     if (!voucher) return;
     
     if (!amount || parseFloat(amount) <= 0) {
-      alert('אנא הזן סכום תקין');
+      setAlertModal({
+        isOpen: true,
+        message: 'אנא הזן סכום תקין',
+        variant: 'warning'
+      });
       return;
     }
 
@@ -34,6 +44,7 @@ const RestoreVoucherModal = ({
 
   const handleClose = () => {
     setAmount('');
+    setAlertModal({ isOpen: false, message: '', variant: 'warning' });
     onClose();
   };
 
@@ -81,6 +92,13 @@ const RestoreVoucherModal = ({
           </div>
         </form>
       </div>
+      
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        message={alertModal.message}
+        variant={alertModal.variant}
+        onClose={() => setAlertModal({ isOpen: false, message: '', variant: 'warning' })}
+      />
     </div>
   );
 };

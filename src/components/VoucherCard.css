@@ -72,9 +72,14 @@
 
 .action-btn {
   padding: 8px 12px;
-  min-width: 44px;
+  min-width: auto;
   height: 44px;
   border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .action-btn:hover {

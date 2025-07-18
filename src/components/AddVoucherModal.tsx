@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import type { VoucherType } from '../types';
 import { VOUCHER_TYPES } from '../constants';
+import AlertModal from './AlertModal';
 import './AddVoucherModal.css';
 
 interface AddVoucherModalProps {
@@ -15,19 +16,41 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
   const [customName, setCustomName] = useState('');
   const [amount, setAmount] = useState('');
   const [link, setLink] = useState('');
+  const [alertModal, setAlertModal] = useState<{isOpen: boolean; message: string; variant?: 'info' | 'warning' | 'error'}>({
+    isOpen: false,
+    message: '',
+    variant: 'warning'
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!amount || parseFloat(amount) <= 0) {
-      alert('אנא הזן סכום תקין');
+      setAlertModal({
+        isOpen: true,
+        message: 'אנא הזן סכום תקין',
+        variant: 'warning'
+      });
+      return;
+    }
+
+    if (!link.trim()) {
+      setAlertModal({
+        isOpen: true,
+        message: 'אנא הזן קישור לשובר',
+        variant: 'warning'
+      });
       return;
     }
 
     const voucherName = selectedType === 'אחר' ? customName.trim() : selectedType;
     
     if (!voucherName) {
-      alert('אנא הזן שם שובר');
+      setAlertModal({
+        isOpen: true,
+        message: 'אנא הזן שם שובר',
+        variant: 'warning'
+      });
       return;
     }
 
@@ -40,6 +63,7 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
     setCustomName('');
     setAmount('');
     setLink('');
+    setAlertModal({ isOpen: false, message: '', variant: 'warning' });
     onClose();
   };
 
@@ -98,13 +122,14 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
           </div>
 
           <div className="form-group">
-            <label>קישור לשובר (אופציונלי):</label>
+            <label>קישור לשובר:</label>
             <input
               type="url"
               className="input"
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="הזן קישור..."
+              required
             />
           </div>
 
@@ -119,6 +144,13 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
           </div>
         </form>
       </div>
+      
+      <AlertModal
+        isOpen={alertModal.isOpen}
+        message={alertModal.message}
+        variant={alertModal.variant}
+        onClose={() => setAlertModal({ isOpen: false, message: '', variant: 'warning' })}
+      />
     </div>
   );
 };
