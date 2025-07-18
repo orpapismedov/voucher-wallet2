@@ -27,7 +27,7 @@ const UserSelector = ({ users, onSelectUser, onAddUser, onDeleteUser }: UserSele
     <div className="user-selector">
       <div className="user-selector-content glass">
         <div className="buyme-logo">
-          <img src="/buyme-logo.png" alt="BuyMe" className="buyme-image" />
+          <img src="./buyme-logo.png" alt="BuyMe" className="buyme-image" />
         </div>
         
         <h1 className="app-title">ארנק שוברים</h1>
