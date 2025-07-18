@@ -10,6 +10,7 @@ import RestoreVoucherModal from './components/RestoreVoucherModal';
 import ConfirmationModal from './components/ConfirmationModal';
 import PasswordModal from './components/PasswordModal';
 import AlertModal from './components/AlertModal';
+import QRImageModal from './components/QRImageModal';
 import * as firestoreService from './services/firestoreService';
 import './App.css';
 
@@ -26,6 +27,8 @@ function App() {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isDeleteVoucherConfirmOpen, setIsDeleteVoucherConfirmOpen] = useState(false);
   const [isDeleteUserConfirmOpen, setIsDeleteUserConfirmOpen] = useState(false);
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
+  const [selectedQRImage, setSelectedQRImage] = useState('');
   const [alertModal, setAlertModal] = useState<{isOpen: boolean; message: string; variant?: 'info' | 'warning' | 'error'}>({
     isOpen: false,
     message: '',
@@ -82,7 +85,7 @@ function App() {
   const archivedVouchers = currentUserVouchers.filter(v => v.isArchived);
   const summary = calculateSummary(currentUserVouchers);
 
-  const handleAddVoucher = async (name: string, amount: number, link: string) => {
+  const handleAddVoucher = async (name: string, amount: number, link: string, code: string, qrImage: string) => {
     if (!selectedUser) return;
     
     try {
@@ -90,22 +93,38 @@ function App() {
         name,
         amount,
         link,
+        code,
+        qrImage,
         userId: selectedUser.id,
         isArchived: false
       });
     } catch (error) {
       console.error('Error adding voucher:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = 'שגיאה בהוספת השובר. אנא נסה שוב.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Document too large')) {
+          errorMessage = 'התמונה גדולה מדי. אנא בחר תמונה קטנה יותר.';
+        } else if (error.message.includes('quota')) {
+          errorMessage = 'הגעת למגבלת השימוש. אנא נסה שוב מאוחר יותר.';
+        } else if (error.message.includes('permission')) {
+          errorMessage = 'אין הרשאה לשמירה. אנא בדוק את החיבור.';
+        }
+      }
+      
       setAlertModal({
         isOpen: true,
-        message: 'שגיאה בהוספת השובר. אנא נסה שוב.',
+        message: errorMessage,
         variant: 'error'
       });
     }
   };
 
-  const handleEditVoucher = async (id: string, name: string, amount: number, link: string) => {
+  const handleEditVoucher = async (id: string, name: string, amount: number, link: string, code: string, qrImage: string) => {
     try {
-      const updateData: any = { name, amount, link };
+      const updateData: any = { name, amount, link, code, qrImage };
       
       // Auto-archive if amount becomes 0
       if (amount === 0) {
@@ -115,9 +134,23 @@ function App() {
       await firestoreService.updateVoucher(id, updateData);
     } catch (error) {
       console.error('Error updating voucher:', error);
+      
+      // Provide more specific error messages
+      let errorMessage = 'שגיאה בעדכון השובר. אנא נסה שוב.';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Document too large')) {
+          errorMessage = 'התמונה גדולה מדי. אנא בחר תמונה קטנה יותר.';
+        } else if (error.message.includes('quota')) {
+          errorMessage = 'הגעת למגבלת השימוש. אנא נסה שוב מאוחר יותר.';
+        } else if (error.message.includes('permission')) {
+          errorMessage = 'אין הרשאה לעדכון. אנא בדוק את החיבור.';
+        }
+      }
+      
       setAlertModal({
         isOpen: true,
-        message: 'שגיאה בעדכון השובר. אנא נסה שוב.',
+        message: errorMessage,
         variant: 'error'
       });
     }
@@ -275,6 +308,11 @@ function App() {
     window.open(link, '_blank');
   };
 
+  const handleViewQR = (qrImage: string) => {
+    setSelectedQRImage(qrImage);
+    setIsQRModalOpen(true);
+  };
+
   const handleVoucherEdit = (voucher: Voucher) => {
     setEditingVoucher(voucher);
     setIsEditModalOpen(true);
@@ -410,6 +448,7 @@ function App() {
                       onEdit={handleVoucherEdit}
                       onArchive={handleArchiveVoucher}
                       onOpenLink={handleOpenLink}
+                      onViewQR={handleViewQR}
                     />
                   ))}
                 </div>
@@ -446,6 +485,7 @@ function App() {
                       onDelete={handleDeleteVoucher}
                       onRestore={handleVoucherRestore}
                       onOpenLink={handleOpenLink}
+                      onViewQR={handleViewQR}
                       isArchived={true}
                     />
                   ))}
@@ -552,6 +592,12 @@ function App() {
           setIsPasswordModalOpen(false);
           setUserToDelete(null);
         }}
+      />
+
+      <QRImageModal
+        isOpen={isQRModalOpen}
+        qrImage={selectedQRImage}
+        onClose={() => setIsQRModalOpen(false)}
       />
     </div>
   );

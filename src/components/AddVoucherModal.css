@@ -106,6 +106,63 @@
   }
 }
 
+/* QR Image Upload Styles */
+.qr-upload-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.upload-btn {
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.upload-btn:hover {
+  transform: translateY(-1px);
+}
+
+.qr-preview {
+  position: relative;
+  display: inline-block;
+  max-width: 200px;
+}
+
+.qr-image-preview {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 8px;
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: var(--danger-color);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: all 0.3s ease;
+}
+
+.remove-image-btn:hover {
+  background: var(--danger-hover);
+  transform: scale(1.1);
+}
+
 /* Mobile responsiveness */
 @media (max-width: 480px) {
   .modal-overlay {

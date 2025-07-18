@@ -1,4 +1,4 @@
-import { Edit, Archive, ExternalLink, Trash2, RotateCcw } from 'lucide-react';
+import { Edit, Archive, ExternalLink, Trash2, RotateCcw, QrCode } from 'lucide-react';
 import type { Voucher } from '../types';
 import { formatCurrency } from '../utils/voucherUtils';
 import './VoucherCard.css';
@@ -10,6 +10,7 @@ interface VoucherCardProps {
   onDelete?: (voucher: Voucher) => void;
   onRestore?: (voucher: Voucher) => void;
   onOpenLink: (link: string) => void;
+  onViewQR?: (qrImage: string) => void;
   isArchived?: boolean;
 }
 
@@ -20,12 +21,20 @@ const VoucherCard = ({
   onDelete,
   onRestore,
   onOpenLink,
+  onViewQR,
   isArchived = false
 }: VoucherCardProps) => {
   const handleLinkClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (voucher.link) {
       onOpenLink(voucher.link);
+    }
+  };
+
+  const handleQRClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (voucher.qrImage && onViewQR) {
+      onViewQR(voucher.qrImage);
     }
   };
 
@@ -39,11 +48,27 @@ const VoucherCard = ({
         >
           {voucher.name}
           {voucher.link && <ExternalLink size={16} className="external-link-icon" />}
+          {voucher.qrImage && (
+            <button 
+              className="qr-btn"
+              onClick={handleQRClick}
+              title="הצג QR"
+            >
+              <QrCode size={40} />
+            </button>
+          )}
         </h3>
         <div className="voucher-amount">
           {formatCurrency(voucher.amount)}
         </div>
       </div>
+      
+      {voucher.code && (
+        <div className="voucher-code">
+          <span className="code-label">קוד: </span>
+          <span className="code-value">{voucher.code}</span>
+        </div>
+      )}
       
       <div className="voucher-actions">
         {!isArchived ? (

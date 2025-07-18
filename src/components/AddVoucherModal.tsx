@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus } from 'lucide-react';
+import { X, Plus, Upload, QrCode } from 'lucide-react';
 import type { VoucherType } from '../types';
 import { VOUCHER_TYPES } from '../constants';
 import AlertModal from './AlertModal';
@@ -8,7 +8,7 @@ import './AddVoucherModal.css';
 interface AddVoucherModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (name: string, amount: number, link: string) => void;
+  onAdd: (name: string, amount: number, link: string, code: string, qrImage: string) => void;
 }
 
 const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
@@ -16,6 +16,8 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
   const [customName, setCustomName] = useState('');
   const [amount, setAmount] = useState('');
   const [link, setLink] = useState('');
+  const [code, setCode] = useState('');
+  const [qrImage, setQrImage] = useState('');
   const [alertModal, setAlertModal] = useState<{isOpen: boolean; message: string; variant?: 'info' | 'warning' | 'error'}>({
     isOpen: false,
     message: '',
@@ -34,15 +36,6 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
       return;
     }
 
-    if (!link.trim()) {
-      setAlertModal({
-        isOpen: true,
-        message: 'אנא הזן קישור לשובר',
-        variant: 'warning'
-      });
-      return;
-    }
-
     const voucherName = selectedType === 'אחר' ? customName.trim() : selectedType;
     
     if (!voucherName) {
@@ -54,7 +47,7 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
       return;
     }
 
-    onAdd(voucherName, parseFloat(amount), link.trim());
+    onAdd(voucherName, parseFloat(amount), link.trim(), code.trim(), qrImage);
     handleClose();
   };
 
@@ -63,8 +56,92 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
     setCustomName('');
     setAmount('');
     setLink('');
+    setCode('');
+    setQrImage('');
     setAlertModal({ isOpen: false, message: '', variant: 'warning' });
     onClose();
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        setAlertModal({
+          isOpen: true,
+          message: 'גודל התמונה חייב להיות קטן מ-5MB',
+          variant: 'warning'
+        });
+        return;
+      }
+
+      // Create image element to resize/compress
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        
+        // Set maximum dimensions for the compressed image
+        const maxWidth = 800;
+        const maxHeight = 800;
+        let { width, height } = img;
+        
+        // Calculate new dimensions maintaining aspect ratio
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress the image
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Convert to base64 with compression (0.7 quality for JPEG)
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+        
+        // Debug: Log the size of the compressed image
+        console.log('Compressed image size:', Math.round(compressedDataUrl.length / 1024), 'KB');
+        
+        // Check if compressed image is still too large (approx 500KB limit for Firestore)
+        if (compressedDataUrl.length > 700000) {
+          setAlertModal({
+            isOpen: true,
+            message: 'התמונה גדולה מדי. אנא בחר תמונה קטנה יותר.',
+            variant: 'warning'
+          });
+          return;
+        }
+        
+        setQrImage(compressedDataUrl);
+      };
+      
+      img.onerror = () => {
+        setAlertModal({
+          isOpen: true,
+          message: 'שגיאה בטעינת התמונה. אנא נסה תמונה אחרת.',
+          variant: 'error'
+        });
+      };
+      
+      // Load the image
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setQrImage('');
   };
 
   if (!isOpen) return null;
@@ -122,6 +199,17 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
           </div>
 
           <div className="form-group">
+            <label>קוד שובר:</label>
+            <input
+              type="text"
+              className="input"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              placeholder="הזן קוד שובר..."
+            />
+          </div>
+
+          <div className="form-group">
             <label>קישור לשובר:</label>
             <input
               type="url"
@@ -129,8 +217,32 @@ const AddVoucherModal = ({ isOpen, onClose, onAdd }: AddVoucherModalProps) => {
               value={link}
               onChange={(e) => setLink(e.target.value)}
               placeholder="הזן קישור..."
-              required
             />
+          </div>
+
+          <div className="form-group">
+            <label>תמונת QR (צילום מסך):</label>
+            <div className="qr-upload-container">
+              <input
+                type="file"
+                id="qr-upload"
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
+              />
+              <label htmlFor="qr-upload" className="btn btn-secondary upload-btn">
+                <Upload size={16} />
+                העלה תמונה
+              </label>
+              {qrImage && (
+                <div className="qr-preview">
+                  <img src={qrImage} alt="QR Code Preview" className="qr-image-preview" />
+                  <button type="button" onClick={handleRemoveImage} className="remove-image-btn">
+                    <X size={16} />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="modal-actions">

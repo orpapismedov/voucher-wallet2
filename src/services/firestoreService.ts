@@ -96,7 +96,16 @@ export const createVoucher = async (voucher: Omit<Voucher, 'id' | 'createdAt' | 
       updatedAt: now
     };
     
+    // Debug: Log document size
+    const dataSize = JSON.stringify(voucherData).length;
+    console.log('Document size:', Math.round(dataSize / 1024), 'KB');
+    
+    if (dataSize > 900000) { // Close to 1MB limit
+      throw new Error('Document too large - exceeds Firestore 1MB limit');
+    }
+    
     const docRef = await addDoc(collection(db, VOUCHERS_COLLECTION), voucherData);
+    console.log('Voucher created successfully with ID:', docRef.id);
     return docRef.id;
   } catch (error) {
     console.error('Error creating voucher:', error);
@@ -106,11 +115,22 @@ export const createVoucher = async (voucher: Omit<Voucher, 'id' | 'createdAt' | 
 
 export const updateVoucher = async (voucherId: string, voucherData: Partial<Omit<Voucher, 'id' | 'createdAt'>>): Promise<void> => {
   try {
-    const voucherRef = doc(db, VOUCHERS_COLLECTION, voucherId);
-    await updateDoc(voucherRef, {
+    const updateData = {
       ...voucherData,
       updatedAt: Timestamp.now()
-    });
+    };
+    
+    // Debug: Log document size
+    const dataSize = JSON.stringify(updateData).length;
+    console.log('Update data size:', Math.round(dataSize / 1024), 'KB');
+    
+    if (dataSize > 900000) { // Close to 1MB limit
+      throw new Error('Document too large - exceeds Firestore 1MB limit');
+    }
+    
+    const voucherRef = doc(db, VOUCHERS_COLLECTION, voucherId);
+    await updateDoc(voucherRef, updateData);
+    console.log('Voucher updated successfully');
   } catch (error) {
     console.error('Error updating voucher:', error);
     throw error;
